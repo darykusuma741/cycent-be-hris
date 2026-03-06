@@ -1,11 +1,33 @@
 import { Global, Module } from '@nestjs/common';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
-import { colorizeText } from './colorize.text';
 import * as winston from 'winston';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { MulterModule } from '@nestjs/platform-express';
+import { APP_GUARD } from '@nestjs/core';
+import { ValidationService } from './validation/validation.service';
+import { JwtModule } from '@nestjs/jwt';
+import { JWT_CONST } from './config/constant';
 
 @Global()
 @Module({
   imports: [
+    ConfigModule.forRoot(),
+    ThrottlerModule.forRoot([{ ttl: 1000, limit: 3 }]),
+    ServeStaticModule.forRoot({
+      rootPath: join('./uploads'), // Direktori tempat gambar disimpan
+      serveRoot: '/uploads', // URL path untuk mengakses gambar
+    }),
+    MulterModule.register({
+      dest: './uploads',
+    }),
+    JwtModule.register({
+      global: true,
+      secret: JWT_CONST.secret,
+      // signOptions: { expiresIn: '60m' },
+    }),
     WinstonModule.forRoot({
       format: winston.format.json(),
       transports: [
@@ -54,7 +76,7 @@ import * as winston from 'winston';
       ],
     }),
   ],
-  providers: [],
-  exports: [WinstonModule],
+  providers: [ValidationService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  exports: [ValidationService, WinstonModule],
 })
 export class CommonModule {}
