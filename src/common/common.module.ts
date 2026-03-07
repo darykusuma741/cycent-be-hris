@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ValidationService } from './validation/validation.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_CONST } from './config/constant';
+import { PrismaService } from './prisma/prisma.service';
 
 @Global()
 @Module({
@@ -76,7 +77,7 @@ import { JWT_CONST } from './config/constant';
       ],
     }),
   ],
-  providers: [ValidationService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
-  exports: [ValidationService, WinstonModule],
+  providers: [ValidationService, { provide: APP_GUARD, useClass: ThrottlerGuard }, PrismaService],
+  exports: [ValidationService, WinstonModule, PrismaService],
 })
 export class CommonModule {}

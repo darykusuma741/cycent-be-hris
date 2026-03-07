@@ -9,7 +9,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder().addBearerAuth().setTitle('Taniqu API').setDescription('REST API HRIS').setVersion('1.0').build();
+  app.setGlobalPrefix('api');
+
+  const config = new DocumentBuilder().addBearerAuth().setTitle('HRIS API').setDescription('REST API HRIS').setVersion('1.0').build();
   const documentFactory = () => SwaggerModule.createDocument(app, config, {});
   SwaggerModule.setup('doc', app, documentFactory, {
     swaggerOptions: {
