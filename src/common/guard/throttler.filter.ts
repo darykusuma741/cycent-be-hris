@@ -1,8 +1,9 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject, Logger } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import { Response, Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as fs from 'fs';
+import { Logger } from 'winston';
 
 @Catch(ThrottlerException)
 export class ThrottlerFilter implements ExceptionFilter<ThrottlerException> {

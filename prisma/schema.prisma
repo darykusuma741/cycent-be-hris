@@ -14,10 +14,21 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   name      String?
   password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  employee  Employee?
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  name      String
+  position  String?
+  userId    Int?     @unique // <-- masih optional
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

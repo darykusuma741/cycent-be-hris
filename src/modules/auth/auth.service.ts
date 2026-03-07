@@ -5,7 +5,6 @@ import { AuthLoginDto } from './auth.model';
 import { JwtService } from '@nestjs/jwt';
 import { UserPayload } from '@common/guard/user.payload';
 import { RoleEnum } from '@common/config/role.enum';
-import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +17,9 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: {
         email: request.email,
+      },
+      include: {
+        employee: true,
       },
     });
 
@@ -39,6 +41,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        employee: user.employee,
       },
     };
   }

@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
 import { ThrottlerFilter } from '@common/guard/throttler.filter';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ValidationFilter } from '@common/validation/validation.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { PrismaFilter } from '@common/prisma/prisma.filter';
+import { Logger } from 'winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,7 +39,7 @@ async function bootstrap() {
 
   const logger = app.get<Logger>(WINSTON_MODULE_PROVIDER);
   app.useGlobalFilters(new ValidationFilter(logger));
-  // app.useGlobalFilters(new PrismaFilter(logger));
+  app.useGlobalFilters(new PrismaFilter(logger));
   app.useGlobalFilters(new ThrottlerFilter(logger));
 
   await app.listen(process.env.PORT ?? 3000);
