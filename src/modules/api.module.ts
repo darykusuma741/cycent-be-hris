@@ -4,9 +4,10 @@ import { AuthModule } from './auth/auth.module';
 import { EmployeeModule } from './employee/employee.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { OfficeModule } from './office/office.module';
+import { ShiftModule } from './shift/shift.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, EmployeeModule, AttendanceModule, OfficeModule],
+  imports: [AuthModule, UsersModule, EmployeeModule, AttendanceModule, OfficeModule, ShiftModule],
   controllers: [],
   providers: [],
 })

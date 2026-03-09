@@ -49,8 +49,6 @@ model Attendance {
   checkOutLatitude  Float? // optional latitude at check-out
   checkOutLongitude Float? // optional longitude at check-out
   notes             String?
-  shiftId           Int? // optional shift assignment for the day
-  shift             Shift?          @relation(fields: [shiftId], references: [id], onDelete: SetNull)
   officeLocationId  Int? // optional office location for the day
   officeLocation    OfficeLocation? @relation(fields: [officeLocationId], references: [id], onDelete: SetNull)
   createdAt         DateTime        @default(now())
@@ -61,26 +59,26 @@ model Attendance {
 
 model Shift {
   id               Int               @id @default(autoincrement())
-  name             String
-  startTime        DateTime
-  endTime          DateTime
+  name             String            @unique
+  startTime        String
+  endTime          String
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   shiftAssignments ShiftAssignment[]
-  attendances      Attendance[]
 }
 
 model ShiftAssignment {
-  id         Int      @id @default(autoincrement())
-  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId Int
-  shift      Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
-  shiftId    Int
-  date       DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    Int
+  shift         Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId       Int
+  startDateTime DateTime // Waktu mulai shift, termasuk tanggal
+  endDateTime   DateTime // Waktu selesai shift, termasuk tanggal
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([employeeId, date]) // Ensure one shift assignment per employee per day
+  @@unique([employeeId, startDateTime]) // Pastikan satu shift per employee per periode
 }
 
 model OfficeLocation {
