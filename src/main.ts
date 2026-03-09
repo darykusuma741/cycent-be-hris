@@ -38,9 +38,7 @@ async function bootstrap() {
   });
 
   const logger = app.get<Logger>(WINSTON_MODULE_PROVIDER);
-  app.useGlobalFilters(new ValidationFilter(logger));
-  app.useGlobalFilters(new PrismaFilter(logger));
-  app.useGlobalFilters(new ThrottlerFilter(logger));
+  app.useGlobalFilters(new ValidationFilter(logger), new PrismaFilter(logger), new ThrottlerFilter(logger));
 
   await app.listen(process.env.PORT ?? 3000);
 }

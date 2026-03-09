@@ -12,11 +12,17 @@ export class EmployeeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.employee.findMany({});
+    return await this.prisma.employee.findMany({});
   }
 
   async create(req: EmployeeCreateDto) {
-    return this.prisma.employee.create({
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId: req.userId },
+    });
+
+    if (employee) throw new ConflictException('User already has employee data');
+
+    return await this.prisma.employee.create({
       data: {
         name: req.name,
         position: req.position,

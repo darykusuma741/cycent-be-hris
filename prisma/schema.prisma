@@ -28,7 +28,7 @@ model Employee {
   name              String
   position          String?
   userId            Int?               @unique // <-- masih optional
-  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attendances       Attendance[]
@@ -37,22 +37,34 @@ model Employee {
 }
 
 model Attendance {
-  id                Int             @id @default(autoincrement())
-  employee          Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  id                Int       @id @default(autoincrement())
+  employee          Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId        Int
   date              DateTime
-  status            String          @default("Present") // "Present", "Sick", "Permission", "Leave"
+  checkInStatus     String?   @default("Present") // "Present", "Sick", "Permission", "Leave"
+  checkOutStatus    String?
   checkIn           DateTime?
   checkInLatitude   Float? // optional latitude at check-in
   checkInLongitude  Float? // optional longitude at check-in
   checkOut          DateTime?
   checkOutLatitude  Float? // optional latitude at check-out
   checkOutLongitude Float? // optional longitude at check-out
-  notes             String?
-  officeLocationId  Int? // optional office location for the day
-  officeLocation    OfficeLocation? @relation(fields: [officeLocationId], references: [id], onDelete: SetNull)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+
+  // ✨ new fields for estimated hours
+  checkInHours           Float? // EARLY/LATE hours
+  checkInHoursFormatter  String? // formatted string for check-in hours (e.g., "1h 30m")
+  checkOutHours          Float? // LEFT_EARLY/OVERTIME hours
+  checkOutHoursFormatted String? // formatted string for check-out hours (e.g., "1h 30m")
+
+  notes            String?
+  shiftId          Int?
+  shift            Shift?          @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  checkInOfficeId  Int?
+  checkInOffice    OfficeLocation? @relation("CheckInOffice", fields: [checkInOfficeId], references: [id], onDelete: SetNull)
+  checkOutOfficeId Int?
+  checkOutOffice   OfficeLocation? @relation("CheckOutOffice", fields: [checkOutOfficeId], references: [id], onDelete: SetNull)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   @@unique([employeeId, date]) // Ensure one record per employee per day
 }
@@ -65,6 +77,7 @@ model Shift {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   shiftAssignments ShiftAssignment[]
+  attendances      Attendance[]
 }
 
 model ShiftAssignment {
@@ -82,15 +95,16 @@ model ShiftAssignment {
 }
 
 model OfficeLocation {
-  id                Int                @id @default(autoincrement())
-  name              String             @unique
-  latitude          Float
-  longitude         Float
-  radius            Float // in meters
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  officeAssignments OfficeAssignment[]
-  attendances       Attendance[]
+  id                  Int                @id @default(autoincrement())
+  name                String             @unique
+  latitude            Float
+  longitude           Float
+  radius              Float // in meters
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  officeAssignments   OfficeAssignment[]
+  checkInAttendances  Attendance[]       @relation("CheckInOffice")
+  checkOutAttendances Attendance[]       @relation("CheckOutOffice")
 }
 
 model OfficeAssignment {
