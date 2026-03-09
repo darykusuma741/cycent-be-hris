@@ -30,4 +30,21 @@ export class EmployeeService {
       },
     });
   }
+
+  async myData(requestUser: Request & { user?: UserPayload }) {
+    if (!requestUser.user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId: requestUser.user.id },
+      include: { user: true },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee data not found');
+    }
+
+    return employee;
+  }
 }

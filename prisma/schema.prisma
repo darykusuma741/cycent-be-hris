@@ -24,11 +24,86 @@ model User {
 }
 
 model Employee {
-  id        Int      @id @default(autoincrement())
-  name      String
-  position  String?
-  userId    Int?     @unique // <-- masih optional
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                Int                @id @default(autoincrement())
+  name              String
+  position          String?
+  userId            Int?               @unique // <-- masih optional
+  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  attendances       Attendance[]
+  shiftAssignments  ShiftAssignment[]
+  officeAssignments OfficeAssignment[]
+}
+
+model Attendance {
+  id                Int             @id @default(autoincrement())
+  employee          Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId        Int
+  date              DateTime
+  status            String          @default("Present") // "Present", "Sick", "Permission", "Leave"
+  checkIn           DateTime?
+  checkInLatitude   Float? // optional latitude at check-in
+  checkInLongitude  Float? // optional longitude at check-in
+  checkOut          DateTime?
+  checkOutLatitude  Float? // optional latitude at check-out
+  checkOutLongitude Float? // optional longitude at check-out
+  notes             String?
+  shiftId           Int? // optional shift assignment for the day
+  shift             Shift?          @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  officeLocationId  Int? // optional office location for the day
+  officeLocation    OfficeLocation? @relation(fields: [officeLocationId], references: [id], onDelete: SetNull)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([employeeId, date]) // Ensure one record per employee per day
+}
+
+model Shift {
+  id               Int               @id @default(autoincrement())
+  name             String
+  startTime        DateTime
+  endTime          DateTime
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  shiftAssignments ShiftAssignment[]
+  attendances      Attendance[]
+}
+
+model ShiftAssignment {
+  id         Int      @id @default(autoincrement())
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId Int
+  shift      Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId    Int
+  date       DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([employeeId, date]) // Ensure one shift assignment per employee per day
+}
+
+model OfficeLocation {
+  id                Int                @id @default(autoincrement())
+  name              String             @unique
+  latitude          Float
+  longitude         Float
+  radius            Float // in meters
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  officeAssignments OfficeAssignment[]
+  attendances       Attendance[]
+}
+
+model OfficeAssignment {
+  id               Int            @id @default(autoincrement())
+  employee         Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId       Int
+  officeLocation   OfficeLocation @relation(fields: [officeLocationId], references: [id], onDelete: Cascade)
+  officeLocationId Int
+  date             DateTime
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([employeeId, date]) // Ensure one office assignment per employee per day
 }

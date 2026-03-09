@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { TransformResponseInterceptor } from '@common/interceptor/transform-response.interceptor';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
@@ -8,6 +8,7 @@ import { AuthGuard } from '@common/guard/auth.guard';
 import { ValidationPipe } from '@common/validation/validation.pipe';
 import { EmployeeValidation } from './employee.validation';
 import { EmployeeCreateDto } from './employee.model';
+import { UserPayload } from '@common/guard/user.payload';
 
 @ApiBearerAuth()
 @Roles([RoleEnum.ADMIN])
@@ -26,5 +27,11 @@ export class EmployeeController {
   @ApiConsumes('application/x-www-form-urlencoded')
   create(@Body(new ValidationPipe(EmployeeValidation.CREATE)) request: EmployeeCreateDto) {
     return this.employeeService.create(request);
+  }
+
+  @Get('my-data')
+  @ApiConsumes('application/x-www-form-urlencoded')
+  myData(@Req() requestUser: Request & { user?: UserPayload }) {
+    return this.employeeService.myData(requestUser);
   }
 }
