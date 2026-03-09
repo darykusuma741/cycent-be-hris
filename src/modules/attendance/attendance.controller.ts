@@ -8,7 +8,7 @@ import { RoleEnum } from '@common/config/role.enum';
 import { AuthGuard } from '@common/guard/auth.guard';
 import { ValidationPipe } from '@common/validation/validation.pipe';
 import { AttendanceValidation } from './attendance.validation';
-import { AttendanceCheckInDto } from './attendance.model';
+import { AttendanceCheckInDto, AttendanceCheckOutDto } from './attendance.model';
 
 @ApiBearerAuth()
 @Roles([RoleEnum.ADMIN])
@@ -25,5 +25,11 @@ export class AttendanceController {
     @Req() requestUser: Request & { user?: UserPayload },
   ) {
     return this.attendanceService.checkIn(requestUser, request);
+  }
+
+  @Post('check-out')
+  @ApiConsumes('application/x-www-form-urlencoded')
+  checkOut(@Body(new ValidationPipe(AttendanceValidation.CheckOut)) request: AttendanceCheckOutDto) {
+    return this.attendanceService.checkOut(request);
   }
 }

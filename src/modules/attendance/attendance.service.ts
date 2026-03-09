@@ -1,7 +1,7 @@
 import { UserPayload } from '@common/guard/user.payload';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { AttendanceCheckInDto } from './attendance.model';
+import { AttendanceCheckInDto, AttendanceCheckOutDto } from './attendance.model';
 import { AttendanceHelper } from '@common/attendance/attendance.helper';
 import { log } from 'node:console';
 import dayjs from 'dayjs';
@@ -62,6 +62,37 @@ export class AttendanceService {
         checkInOfficeId: request.officeId,
         date: today,
         shiftId: request.shiftId,
+      },
+    });
+  }
+
+  async checkOut(request: AttendanceCheckOutDto) {
+    const attendance = await this.prisma.attendance.findUnique({
+      where: {
+        id: request.attendanceId,
+      },
+      include: {
+        shift: true,
+      },
+    });
+
+    if (!attendance) throw new NotFoundException('Attendance not found');
+    if (attendance.shift === null) throw new NotFoundException('Shift data not found for this attendance record');
+
+    const checkOutTime = new Date(); // waktu check-out saat ini (Date object)
+    const status = AttendanceHelper.determineCheckOutStatus(checkOutTime, attendance.shift.endTime); // tentukan status check-out (ONTIME, LEFT_EARLY, OVERTIME)
+    const checkOutHours = AttendanceHelper.getCheckOutDuration(checkOutTime, attendance.shift.endTime); // hitung durasi jam untuk check-out (float dan formatted string)
+
+    return await this.prisma.attendance.update({
+      where: { id: request.attendanceId },
+      data: {
+        checkOutLatitude: request.latitude,
+        checkOutLongitude: request.longitude,
+        checkOut: checkOutTime,
+        checkOutHours: checkOutHours.hours, // simpan jam sebagai float
+        checkOutHoursFormatted: checkOutHours.formatted, // simpan string terformat
+        checkOutStatus: status,
+        checkOutOfficeId: request.officeId,
       },
     });
   }
