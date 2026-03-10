@@ -7,10 +7,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import { APP_GUARD } from '@nestjs/core';
-import { ValidationService } from './validation/validation.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JWT_CONST } from './config/constant';
 import { PrismaService } from './prisma/prisma.service';
+import { ValidationService } from './validation/validation.service';
+import { JWT_CONST } from './config/constant';
 
 @Global()
 @Module({

@@ -4,9 +4,6 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { AttendanceCheckInDto, AttendanceCheckOutDto } from './attendance.model';
 import { AttendanceHelper } from '@common/attendance/attendance.helper';
 import { log } from 'node:console';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 
 @Injectable()
 export class AttendanceService {
