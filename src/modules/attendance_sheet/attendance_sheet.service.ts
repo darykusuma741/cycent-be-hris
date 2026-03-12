@@ -21,13 +21,11 @@ export class AttendanceSheetService {
     // Ambil semua employee
     const employees = await this.prisma.employee.findMany();
 
-    // Buat daftar semua tanggal kerja di periode (exclude Sabtu & Minggu)
+    // Daftar semua tanggal kerja di periode (exclude Sabtu & Minggu)
     const workDates: Date[] = [];
     for (let d = new Date(period.startDate); d <= period.endDate; d.setDate(d.getDate() + 1)) {
-      const day = d.getDay(); // 0 = Minggu, 6 = Sabtu
-      if (day !== 0 && day !== 6) {
-        workDates.push(new Date(d));
-      }
+      const day = d.getDay();
+      if (day !== 0 && day !== 6) workDates.push(new Date(d));
     }
 
     for (const employee of employees) {
@@ -42,6 +40,25 @@ export class AttendanceSheetService {
         },
       });
 
+      // Ambil semua leave Approved di periode
+      const leaves = await this.prisma.leave.findMany({
+        where: {
+          employeeId: employee.id,
+          status: 'Approved',
+          OR: [
+            {
+              startDate: { gte: period.startDate, lte: period.endDate },
+            },
+            {
+              endDate: { gte: period.startDate, lte: period.endDate },
+            },
+            {
+              AND: [{ startDate: { lte: period.startDate } }, { endDate: { gte: period.endDate } }],
+            },
+          ],
+        },
+      });
+
       // Hitung semua total
       let totalPresent = 0;
       let totalLate = 0;
@@ -51,38 +68,30 @@ export class AttendanceSheetService {
       let totalAbsentDays = 0;
       let totalNotCheckedOut = 0;
 
-      const absentDates: string[] = [];
-
       for (const date of workDates) {
-        // cari attendance di tanggal ini
         const att = attendances.find((a) => a.date.toDateString() === date.toDateString());
 
         if (!att) {
-          // kalau tidak ada attendance → Absent
+          // Kalau tidak ada attendance → Absent
           totalAbsentDays++;
-          absentDates.push(date.toISOString().split('T')[0]);
         } else {
-          // kalau ada attendance → hitung normal
           if (att.checkInStatus && att.checkInStatus !== 'Absent') totalPresent++;
           if (att.checkInStatus === 'LATE') totalLate++;
           if (att.checkOutStatus === 'LEFT_EARLY') totalEarlyLeave++;
           if (att.checkOutStatus === 'OVERTIME' && att.checkOutHours) totalOvertime += att.checkOutHours;
           if (att.checkOutStatus === 'NOT_CHECKED_OUT') totalNotCheckedOut++;
-          if (att.checkInStatus === 'Leave') totalLeaveDays += att.checkInHours || 1;
+        }
+
+        // Cek cuti di tanggal ini
+        const leaveOnThisDate = leaves.find((l) => date >= new Date(l.startDate) && date <= new Date(l.endDate));
+        if (leaveOnThisDate) {
+          totalLeaveDays++;
+          // Kalau ada leave, kurangi dari absent
+          if (!att) totalAbsentDays--;
         }
       }
 
-      log('Employee:', employee.name);
-      log('Total Present:', totalPresent);
-      log('Total Late:', totalLate);
-      log('Total Early Leave:', totalEarlyLeave);
-      log('Total Overtime:', totalOvertime);
-      log('Total Leave Days:', totalLeaveDays);
-      log('Total Absent Days:', totalAbsentDays);
-      log('Total Not Checked Out:', totalNotCheckedOut);
-      log('---');
-
-      // Gunakan upsert: update kalau sudah ada, create kalau belum ada
+      // Upsert AttendanceSheet
       await this.prisma.attendanceSheet.upsert({
         where: {
           employeeId_periodId: {
@@ -98,7 +107,6 @@ export class AttendanceSheetService {
           totalLeaveDays,
           totalAbsentDays,
           totalNotCheckedOut,
-          absentDates: absentDates.join(', '),
         },
         create: {
           employeeId: employee.id,
@@ -110,7 +118,6 @@ export class AttendanceSheetService {
           totalLeaveDays,
           totalAbsentDays,
           totalNotCheckedOut,
-          absentDates: absentDates.join(', '),
         },
       });
     }

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Employee" ALTER COLUMN "allowances" DROP DEFAULT,
+ALTER COLUMN "salary" DROP DEFAULT;

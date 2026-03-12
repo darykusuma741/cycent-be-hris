@@ -27,6 +27,8 @@ export class EmployeeService {
         name: req.name,
         position: req.position,
         userId: req.userId,
+        allowances: 1000000, // Contoh nilai tunjangan tetap, bisa disesuaikan
+        salary: 5000000, // Contoh nilai gaji pokok, bisa disesuaikan
       },
       include: {
         user: true,

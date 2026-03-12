@@ -30,6 +30,8 @@ model Employee {
   position          String?
   userId            Int?               @unique // <-- masih optional
   user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  salary            Int
+  allowances        Int
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   attendances       Attendance[]
@@ -37,6 +39,7 @@ model Employee {
   officeAssignments OfficeAssignment[]
   leaves            Leave[]
   attendanceSheets  AttendanceSheet[]
+  payrolls          Payroll[]
 }
 
 model Attendance {
@@ -159,8 +162,9 @@ model AttendancePeriod {
 
   attendanceSheets AttendanceSheet[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  payrollPeriods PayrollPeriod[]
 
   @@unique([startDate, endDate])
 }
@@ -184,8 +188,48 @@ model AttendanceSheet {
   totalLeaveDays  Float @default(0)
   totalAbsentDays Float @default(0)
 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payrolls  Payroll[]
+
+  @@unique([employeeId, periodId])
+}
+
+model PayrollPeriod {
+  id                 Int              @id @default(autoincrement())
+  name               String // Maret 2026
+  startDate          DateTime
+  endDate            DateTime
+  isClosed           Boolean          @default(false) // kalau sudah diproses payroll
+  attendancePeriodId Int
+  attendancePeriod   AttendancePeriod @relation(fields: [attendancePeriodId], references: [id], onDelete: Cascade)
+
+  payrolls Payroll[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payroll {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  payrollPeriodId Int
+  payrollPeriod   PayrollPeriod @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
+
+  attendanceSheetId Int?
+  attendanceSheet   AttendanceSheet? @relation(fields: [attendanceSheetId], references: [id], onDelete: SetNull)
+
+  // Komponen gaji
+  basicSalary Float // gaji pokok
+  allowances  Float @default(0) // tunjangan
+  deductions  Float @default(0) // potongan, misal bolos, terlambat, atau pinjaman
+  overtimePay Float @default(0) // lembur
+  netSalary   Float // gaji bersih = basic + allowance + overtime - deductions
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([employeeId, periodId])
+  @@unique([employeeId, payrollPeriodId])
 }
