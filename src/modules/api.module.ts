@@ -6,9 +6,10 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { OfficeModule } from './office/office.module';
 import { ShiftModule } from './shift/shift.module';
 import { LeaveModule } from './leave/leave.module';
+import { AttendanceSheetModule } from './attendance_sheet/attendance_sheet.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, EmployeeModule, AttendanceModule, OfficeModule, ShiftModule, LeaveModule],
+  imports: [AuthModule, UsersModule, EmployeeModule, AttendanceModule, OfficeModule, ShiftModule, LeaveModule, AttendanceSheetModule],
   controllers: [],
   providers: [],
 })

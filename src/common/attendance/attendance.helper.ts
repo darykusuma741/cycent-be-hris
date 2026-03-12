@@ -1,7 +1,7 @@
 // src/common/attendance/attendance.helper.ts
 
-export type CheckInStatus = 'EARLY' | 'ONTIME' | 'LATE';
-export type CheckOutStatus = 'ONTIME' | 'LEFT_EARLY' | 'OVERTIME';
+export type CheckInStatus = 'EARLY' | 'ONTIME_ARRIVAL' | 'LATE';
+export type CheckOutStatus = 'ONTIME_DEPARTURE' | 'LEFT_EARLY' | 'OVERTIME';
 
 export class AttendanceHelper {
   private static TOLERANCE_MINUTES = 15; // toleransi 15 menit untuk ONTIME
@@ -19,7 +19,7 @@ export class AttendanceHelper {
     if (checkInTime.getTime() < shiftStart.getTime()) {
       return 'EARLY';
     } else if (checkInTime.getTime() <= shiftStart.getTime() + toleranceMs) {
-      return 'ONTIME';
+      return 'ONTIME_ARRIVAL';
     } else {
       return 'LATE';
     }
@@ -38,7 +38,7 @@ export class AttendanceHelper {
     if (checkOutTime.getTime() < shiftEnd.getTime()) {
       return 'LEFT_EARLY';
     } else if (checkOutTime.getTime() <= shiftEnd.getTime() + toleranceMs) {
-      return 'ONTIME';
+      return 'ONTIME_DEPARTURE';
     } else {
       return 'OVERTIME';
     }
@@ -56,7 +56,7 @@ export class AttendanceHelper {
     shiftStart.setHours(startHour, startMinute, 0, 0);
 
     const diffHours = (checkInTime.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
-    if (status === 'ONTIME') return null;
+    if (status === 'ONTIME_ARRIVAL') return null;
     if (status === 'EARLY') return Math.abs(diffHours);
     if (status === 'LATE') return diffHours;
     return null;
@@ -74,7 +74,7 @@ export class AttendanceHelper {
     shiftEnd.setHours(endHour, endMinute, 0, 0);
 
     const diffHours = (checkOutTime.getTime() - shiftEnd.getTime()) / (1000 * 60 * 60);
-    if (status === 'ONTIME') return null;
+    if (status === 'ONTIME_DEPARTURE') return null;
     if (status === 'LEFT_EARLY') return Math.abs(diffHours);
     if (status === 'OVERTIME') return diffHours;
     return null;

@@ -57,6 +57,7 @@ export class AttendanceService {
         checkInHoursFormatter: checkInHours.formatted, // simpan string terformat
         checkInStatus: status,
         checkInOfficeId: request.officeId,
+        checkOutStatus: 'NOT_CHECKED_OUT',
         date: today,
         shiftId: request.shiftId,
       },
