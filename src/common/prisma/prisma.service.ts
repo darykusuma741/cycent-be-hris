@@ -1,3 +1,4 @@
+import { BcryptUtil } from '@common/security/bcrypt.util';
 import { PrismaClient } from '@generated/prisma/client';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -14,6 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleInit() {
     await this.$connect();
     await this.ensureDefaultLeavePolicy();
+    await this.ensureDefaultUser();
   }
 
   async onModuleDestroy() {
@@ -36,5 +38,24 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
 
     console.log('Default LeavePolicy ensured!');
+  }
+
+  private async ensureDefaultUser() {
+    const hashedPassword = await BcryptUtil.hash('123456');
+
+    const defaultUser = {
+      email: 'testing@gmail.com',
+      password: hashedPassword,
+      name: 'Testing',
+      role: 'admin',
+    };
+
+    await this.user.upsert({
+      where: { email: defaultUser.email },
+      update: {},
+      create: defaultUser,
+    });
+
+    console.log('Default user ensured!');
   }
 }

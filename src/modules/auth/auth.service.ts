@@ -5,6 +5,7 @@ import { AuthLoginDto } from './auth.model';
 import { JwtService } from '@nestjs/jwt';
 import { UserPayload } from '@common/guard/user.payload';
 import { RoleEnum } from '@common/config/role.enum';
+import { late } from 'zod/v3';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +34,14 @@ export class AuthService {
       throw new ConflictException('Invalid password');
     }
 
-    const payload: UserPayload = { id: user.id, roles: [RoleEnum.ADMIN] };
+    let role: RoleEnum;
+    if (Object.values(RoleEnum).includes(user.role as RoleEnum)) {
+      role = user.role as RoleEnum;
+    } else {
+      role = RoleEnum.EMPLOYEE; // Default role jika tidak valid
+    }
+
+    const payload: UserPayload = { id: user.id, roles: [role] };
     const access_token = this.jwtService.sign(payload);
     return {
       access_token,

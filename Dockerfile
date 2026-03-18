@@ -26,4 +26,5 @@ RUN ls -la dist
 EXPOSE 3000
 
 # Jalankan aplikasi
-CMD ["node", "dist/src/main.js"]
+# CMD ["node", "dist/src/main.js"]
+CMD npx prisma migrate deploy && node dist/src/main.js
