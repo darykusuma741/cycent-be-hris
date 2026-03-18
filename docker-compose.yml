@@ -1,0 +1,15 @@
+# version: "3.9"
+
+services:
+  cycent-hris-be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cycent-hris-be
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
