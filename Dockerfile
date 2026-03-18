@@ -1,5 +1,6 @@
 # Gunakan node alpine
-FROM node:20-alpine
+# FROM node:20-alpine
+FROM node:22.13.1-alpine
 
 # Buat working directory
 WORKDIR /app
@@ -19,9 +20,10 @@ RUN npx prisma generate
 
 # Build NestJS
 RUN pnpm run build
+RUN ls -la dist
 
 # Expose port aplikasi
 EXPOSE 3000
 
 # Jalankan aplikasi
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
