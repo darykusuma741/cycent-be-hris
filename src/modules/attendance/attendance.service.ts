@@ -94,4 +94,37 @@ export class AttendanceService {
       },
     });
   }
+
+  async attendanceToday(requestUser: Request & { user?: UserPayload }) {
+    const now = new Date();
+
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const attendance = await this.prisma.attendance.findFirst({
+      where: {
+        employee: {
+          userId: requestUser.user?.id,
+        },
+        checkIn: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+        // checkOut: null, // belum checkout
+      },
+      include: {
+        shift: true,
+      },
+      orderBy: {
+        checkIn: 'desc',
+      },
+    });
+
+    // if (!attendance) throw new NotFoundException('Data Not Found');
+
+    return attendance;
+  }
 }

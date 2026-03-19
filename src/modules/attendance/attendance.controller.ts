@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { TransformResponseInterceptor } from '@common/interceptor/transform-response.interceptor';
 import { AttendanceService } from './attendance.service';
 import { UserPayload } from '@common/guard/user.payload';
@@ -31,5 +31,10 @@ export class AttendanceController {
   @ApiConsumes('application/x-www-form-urlencoded')
   checkOut(@Body(new ValidationPipe(AttendanceValidation.CheckOut)) request: AttendanceCheckOutDto) {
     return this.attendanceService.checkOut(request);
+  }
+
+  @Get('attendance-today')
+  attendanceToday(@Req() requestUser: Request & { user?: UserPayload }) {
+    return this.attendanceService.attendanceToday(requestUser);
   }
 }
